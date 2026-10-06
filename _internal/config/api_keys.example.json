@@ -1,0 +1,92 @@
+{
+  "gemini_api_key": "",
+  "os_system": "windows",
+  "hud_style": "core",
+  "input_device": "",
+  "output_device": "",
+  "providers": {
+    "mode": "gemini",
+    "pipeline": {
+      "stt": "",
+      "llm": "",
+      "tts": ""
+    },
+    "creds": {},
+    "sidecar": "",
+    "sidecar_first": false
+  },
+  "assistant_name": "JARVIS",
+  "user_name": "",
+  "ui_color": "#00a2ff",
+  "plugin_config": {
+    "gmail": {
+      "client_id": "",
+      "client_secret": "",
+      "token": ""
+    },
+    "whatsapp_call": {
+      "transport": "auto",
+      "app_name": "Whatapp",
+      "verify_contact": false,
+      "launch_wait": "",
+      "search_wait": ""
+    },
+    "app_shortcuts": {
+      "shortcuts": "Steam = steam://open/games\nEpic Games = com.epicgames.launcher://apps"
+    },
+    "home_assistant": {
+      "api_key": "",
+      "api_secret": "",
+      "region": "eu",
+      "device_id": ""
+    },
+    "obsidian_vault": {
+      "vault_path": "",
+      "daily_folder": "",
+      "daily_format": "YYYY/MM/YYYY-MM-DD",
+      "new_note_folder": ""
+    },
+    "printer": {
+      "brand": "creality",
+      "model": "",
+      "ip": "",
+      "access_code": "",
+      "serial": ""
+    },
+    "telegram_remote": {
+      "bot_token": "",
+      "pairing_code": "",
+      "allowed_chat_ids": "",
+      "relay_replies": true
+    },
+    "whatsapp_guard": {
+      "busy_message": "Hello. I'm the user's personal assistant. They are unavailable at the moment. Please tell me what you need and I can pass the details on.",
+      "always_announce": "",
+      "always_decline": "",
+      "decline_unknown": false
+    }
+  },
+  "wake_word_enabled": false,
+  "morning_brief_enabled": false,
+  "dashboard_https": true,
+  "interrupt_hotkey": "Ctrl+Shift+I",
+  "mute_hotkey": "Ctrl+M",
+  "discord_hotkey": "Ctrl+Shift+D",
+  "provider_connections": {},
+  "startup_sequence_enabled": true,
+  "startup_sequence_duration_ms": 6200,
+  "startup_fullscreen": true,
+  "natural_conversation_mode": true,
+  "voice_barge_in_enabled": true,
+  "system_awareness_enabled": true,
+  "universal_search_deep_default": false,
+  "universal_search_web_default": false,
+  "workspace_profile_mode": "auto",
+  "workspace_profile_manual": "general",
+  "contextual_suggestions_enabled": true,
+  "crash_recovery_enabled": true,
+  "quiet_intelligence_enabled": false,
+  "smart_error_recovery_enabled": true,
+  "auto_lock_enabled": true,
+  "auto_lock_minutes": 15
+}

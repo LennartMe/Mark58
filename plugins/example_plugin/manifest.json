@@ -1,0 +1,24 @@
+{
+  "name": "example_plugin",
+  "label": "Example Plugin",
+  "version": "1.0",
+  "description": "A template plugin showing how to extend Jarvis with custom actions.",
+  "author": "Jarvis",
+  "settings": {
+    "enabled": {
+      "label": "Enable Feature",
+      "type": "bool",
+      "default": true
+    },
+    "retry_count": {
+      "label": "Retry Count",
+      "type": "number",
+      "default": 3
+    },
+    "api_endpoint": {
+      "label": "API Endpoint",
+      "type": "text",
+      "default": "https://api.example.com"
+    }
+  }
+}

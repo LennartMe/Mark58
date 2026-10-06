@@ -1,0 +1,7 @@
+{
+  "level": "ask",
+  "rules": {},
+  "grace_seconds": 0.0,
+  "breaker_enabled": true,
+  "notify": true
+}

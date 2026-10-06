@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mark LVI — Control</title>
+<style>
+/* ═══════════════════════════════════════════════════════════════════════════
+   Mark LVI control console
+
+   The subject is an agent that operates a computer while nobody is watching.
+   The two questions the page exists to answer are "how much authority does it
+   have right now" and "what has it just done" — so authority is a lever with
+   physical positions, and history is a register, not a grid of cards.
+
+   Palette is a signal box at night: warm graphite, sodium lamp, oxide red.
+   Deliberately not the cyan-on-black this genre defaults to.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root{
+  --ground:#14150F;
+  --panel:#1C1E16;
+  --panel-2:#22251B;
+  --edge:#2E3227;
+  --edge-bright:#434833;
+
+  --bone:#E9E5D6;
+  --muted:#98947F;
+  --faint:#6A6857;
+
+  --sodium:#D4A017;      /* authority, acting */
+  --sage:#7D8B5A;        /* verified, done */
+  --oxide:#A93F2E;       /* halt, refused */
+  --slate:#5F7185;       /* asked, waiting */
+
+  --rail:288px;
+  --tick:cubic-bezier(.2,.9,.3,1);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--bone);
+  font-family:"Helvetica Neue","Segoe UI Variable Text",Inter,system-ui,-apple-system,sans-serif;
+  font-size:15px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.num{font-family:"SF Mono","Cascadia Mono","Roboto Mono",ui-monospace,monospace;
+     font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+:focus-visible{outline:2px solid var(--sodium);outline-offset:2px}
+
+/* ── frame ────────────────────────────────────────────────────────────── */
+.frame{display:grid;grid-template-columns:var(--rail) 1fr;min-height:100vh}
+
+/* ── left rail: authority ─────────────────────────────────────────────── */
+.rail{
+  background:var(--panel);
+  border-right:1px solid var(--edge);
+  padding:26px 22px 22px;
+  display:flex;flex-direction:column;gap:26px;
+  position:sticky;top:0;height:100vh;overflow-y:auto;
+}
+.mark{display:flex;align-items:baseline;gap:9px}
+.mark h1{font-size:17px;font-weight:600;letter-spacing:-.015em;margin:0}
+.mark span{font-size:12px;color:var(--faint)}
+
+/* the lever — the hero of the page */
+.lever{position:relative;padding-left:46px}
+.lever-track{
+  position:absolute;left:16px;top:11px;bottom:11px;width:6px;
+  background:var(--ground);border:1px solid var(--edge);border-radius:3px;
+}
+.lever-fill{
+  position:absolute;left:0;right:0;bottom:0;background:var(--sodium);
+  border-radius:2px;transition:height .32s var(--tick),background .32s ease;
+}
+.lever-handle{
+  position:absolute;left:8px;width:22px;height:22px;border-radius:50%;
+  background:var(--panel-2);border:2px solid var(--sodium);
+  box-shadow:0 0 0 4px var(--panel), 0 2px 6px rgba(0,0,0,.5);
+  transition:top .32s var(--tick),border-color .32s ease;
+  pointer-events:none;
+}
+.detent{
+  display:block;width:100%;text-align:left;padding:6px 0;
+  color:var(--faint);transition:color .18s ease;
+}
+.detent b{display:block;font-size:14px;font-weight:600;letter-spacing:-.01em}
+.detent i{display:block;font-style:normal;font-size:12px;line-height:1.35;
+          color:var(--faint);margin-top:1px}
+.detent:hover{color:var(--muted)}
+.detent[aria-checked="true"]{color:var(--bone)}
+.detent[aria-checked="true"] i{color:var(--muted)}
+
+/* halt */
+.halt{
+  width:100%;padding:13px;border:1px solid var(--oxide);border-radius:3px;
+  color:#E9B8AF;background:rgba(169,63,46,.10);
+  font-weight:600;letter-spacing:.01em;
+  transition:background .16s ease;
+}
+.halt:hover{background:rgba(169,63,46,.20)}
+.halt.engaged{background:var(--oxide);color:#fff;border-color:#C7523E}
+
+/* counters */
+.counts{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+        background:var(--edge);border:1px solid var(--edge);border-radius:3px;overflow:hidden}
+.count{background:var(--panel-2);padding:10px 8px}
+.count b{display:block;font-size:20px;font-weight:500;line-height:1.1}
+.count span{font-size:11px;color:var(--faint)}
+
+.note{font-size:12px;color:var(--faint);line-height:1.45}
+.note b{color:var(--muted);font-weight:600}
+
+/* ── right: register ──────────────────────────────────────────────────── */
+.main{display:flex;flex-direction:column;min-width:0}
+.tabs{
+  display:flex;gap:2px;padding:0 24px;border-bottom:1px solid var(--edge);
+  background:var(--ground);position:sticky;top:0;z-index:5;
+}
+.tab{
+  white-space:nowrap;
+  padding:16px 14px 13px;color:var(--faint);font-size:14px;
+  border-bottom:2px solid transparent;margin-bottom:-1px;
+}
+.tab:hover{color:var(--muted)}
+.tab[aria-selected="true"]{color:var(--bone);border-bottom-color:var(--sodium)}
+.tab .badge{
+  display:inline-block;margin-left:6px;padding:1px 6px;border-radius:8px;
+  background:var(--panel-2);color:var(--muted);font-size:11px;
+}
+.pane{padding:24px;flex:1;min-width:0}
+.pane[hidden]{display:none}
+
+.bar{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.bar h2{font-size:15px;font-weight:600;margin:0;letter-spacing:-.01em}
+.bar p{margin:0;font-size:13px;color:var(--faint);flex:1;min-width:180px}
+.act{
+  padding:7px 13px;border:1px solid var(--edge-bright);border-radius:3px;
+  font-size:13px;color:var(--muted);transition:border-color .16s,color .16s;
+}
+.act:hover{border-color:var(--sodium);color:var(--bone)}
+
+/* the register itself: a sequence, so it gets a rule and a gutter */
+.reg{list-style:none;margin:0;padding:0;position:relative}
+.reg::before{content:"";position:absolute;left:5px;top:6px;bottom:6px;
+             width:1px;background:var(--edge)}
+.row{
+  display:grid;grid-template-columns:24px 74px 1fr auto;gap:12px;
+  align-items:baseline;padding:9px 0;border-bottom:1px solid rgba(46,50,39,.55);
+}
+.row:last-child{border-bottom:none}
+.dot{width:11px;height:11px;border-radius:50%;margin-left:0;
+     background:var(--panel);border:2px solid var(--faint);transform:translateY(2px)}
+.dot.allow,.dot.done{border-color:var(--sage)}
+.dot.ask,.dot.unverified{border-color:var(--slate)}
+.dot.deny,.dot.failed{border-color:var(--oxide);background:var(--oxide)}
+.time{font-size:12px;color:var(--faint);white-space:nowrap}
+.what{min-width:0}
+.what b{font-weight:600;letter-spacing:-.005em}
+.what p{margin:2px 0 0;font-size:13px;color:var(--muted);
+        overflow-wrap:anywhere;max-width:74ch}
+.tagline{font-size:12px;color:var(--faint);white-space:nowrap}
+.tag{
+  display:inline-block;padding:1px 7px;border-radius:2px;font-size:11px;
+  border:1px solid var(--edge-bright);color:var(--muted);
+}
+.tag.allow,.tag.done{color:var(--sage);border-color:rgba(125,139,90,.45)}
+.tag.ask,.tag.unverified{color:var(--slate);border-color:rgba(95,113,133,.45)}
+.tag.deny,.tag.failed{color:#D08574;border-color:rgba(169,63,46,.5)}
+
+/* claims */
+.claim{padding:13px 0;border-bottom:1px solid rgba(46,50,39,.55);
+       display:grid;grid-template-columns:1fr auto;gap:14px;align-items:start}
+.claim p{margin:0;max-width:78ch}
+.claim .meta{font-size:12px;color:var(--faint);margin-top:4px}
+.conf{width:56px;height:4px;background:var(--ground);border:1px solid var(--edge);
+      border-radius:2px;overflow:hidden;margin-top:8px}
+.conf i{display:block;height:100%;background:var(--sage)}
+.conf.low i{background:var(--oxide)}
+
+.empty{padding:44px 0;color:var(--faint);max-width:56ch}
+.empty b{display:block;color:var(--muted);font-weight:600;margin-bottom:5px}
+
+.finding{padding:12px 0 12px 14px;border-left:2px solid var(--edge-bright);margin-bottom:12px}
+.finding.problem{border-left-color:var(--oxide)}
+.finding.warn{border-left-color:var(--sodium)}
+.finding b{display:block;font-weight:600;font-size:14px}
+.finding p{margin:3px 0 0;font-size:13px;color:var(--muted);max-width:76ch}
+
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--faint)}
+.pill s{width:6px;height:6px;border-radius:50%;background:var(--sage);text-decoration:none}
+.pill s.off{background:var(--faint)}
+.pill s.bad{background:var(--oxide)}
+
+/* halted state washes the frame — the one non-user-triggered motion */
+body.halted .rail{border-right-color:var(--oxide)}
+body.halted::after{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:20;
+  box-shadow:inset 0 0 0 2px var(--oxide);
+  animation:breathe 3.4s ease-in-out infinite;
+}
+@keyframes breathe{0%,100%{opacity:.35}50%{opacity:.85}}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;transition-duration:.001ms !important}
+}
+
+@media (max-width:860px){
+  .frame{grid-template-columns:1fr}
+  .rail{position:static;height:auto;border-right:none;border-bottom:1px solid var(--edge)}
+  .row{grid-template-columns:20px 1fr;gap:9px}
+  .row .time{display:none}
+  .tabs{overflow-x:auto;padding:0 14px}
+  .pane{padding:18px 14px}
+}
+</style>
+</head>
+<body>
+<div class="frame">
+
+  <!-- ── authority rail ────────────────────────────────────────────────── -->
+  <aside class="rail">
+    <div class="mark">
+      <h1>Mark LVI</h1>
+      <span class="num" id="clock">—</span>
+    </div>
+
+    <div>
+      <div class="lever" role="radiogroup" aria-label="Authority level">
+        <div class="lever-track"><div class="lever-fill" id="fill"></div></div>
+        <div class="lever-handle" id="handle"></div>
+        <button class="detent" role="radio" data-level="sovereign" aria-checked="false">
+          <b>Sovereign</b><i>Every gate open. No floor, no rate limit.</i>
+        </button>
+        <button class="detent" role="radio" data-level="full" aria-checked="false">
+          <b>Full</b><i>Acts on everything, including shutdown.</i>
+        </button>
+        <button class="detent" role="radio" data-level="guarded" aria-checked="true">
+          <b>Guarded</b><i>Acts freely; still asks before a shutdown.</i>
+        </button>
+        <button class="detent" role="radio" data-level="ask" aria-checked="false">
+          <b>Ask</b><i>Confirms anything it cannot undo.</i>
+        </button>
+      </div>
+    </div>
+
+    <button class="halt" id="halt">Stop everything</button>
+    <p class="note" id="halt-note" hidden>Everything that touches this machine is
+      being refused. It will say so if you ask it to do something.</p>
+
+    <div class="counts">
+      <div class="count"><b class="num" id="c-allowed">0</b><span>ran</span></div>
+      <div class="count"><b class="num" id="c-asked">0</b><span>asked</span></div>
+      <div class="count"><b class="num" id="c-denied">0</b><span>refused</span></div>
+    </div>
+
+    <div class="note" id="breaker">
+      <span class="pill"><s id="b-dot"></s> <span id="b-text">No failures recently.</span></span>
+    </div>
+
+    <div class="note" id="conn" style="margin-top:auto">
+      <span class="pill"><s id="net-dot" class="off"></s> <span id="net-text">Connecting…</span></span>
+    </div>
+  </aside>
+
+  <!-- ── register ──────────────────────────────────────────────────────── -->
+  <main class="main">
+    <nav class="tabs" role="tablist">
+      <button class="tab" role="tab" aria-selected="true"  data-pane="p-reg">Register</button>
+      <button class="tab" role="tab" aria-selected="false" data-pane="p-learn">What it learned<span class="badge" id="n-learn">0</span></button>
+      <button class="tab" role="tab" aria-selected="false" data-pane="p-reflect">Self-assessment</button>
+      <button class="tab" role="tab" aria-selected="false" data-pane="p-rules">Pinned actions<span class="badge" id="n-rules">0</span></button>
+    </nav>
+
+    <section class="pane" id="p-reg">
+      <div class="bar">
+        <h2>Register</h2>
+        <p>Every decision and every tool call, newest first.</p>
+        <button class="act" id="r-refresh">Refresh</button>
+      </div>
+      <ul class="reg" id="register"></ul>
+    </section>
+
+    <section class="pane" id="p-learn" hidden>
+      <div class="bar">
+        <h2>What it learned</h2>
+        <p>Claims it worked out on its own. Confidence rises when a claim is confirmed and falls when it is contradicted.</p>
+      </div>
+      <div id="knowledge"></div>
+    </section>
+
+    <section class="pane" id="p-reflect" hidden>
+      <div class="bar">
+        <h2>Self-assessment</h2>
+        <p>Arithmetic over its own record — not its opinion of itself.</p>
+        <button class="act" id="run-reflect">Run a pass now</button>
+      </div>
+      <div id="reflection"></div>
+    </section>
+
+    <section class="pane" id="p-rules" hidden>
+      <div class="bar">
+        <h2>Pinned actions</h2>
+        <p>Overrides that apply whatever the lever says. It pins an action itself when that action keeps failing.</p>
+      </div>
+      <div id="rules"></div>
+    </section>
+  </main>
+</div>
+
+<script>
+"use strict";
+/* ───────────────────────────────────────────────────────────────────────────
+   State + transport. Every call degrades to demo data so the page can be
+   opened directly from disk while the assistant is not running — an empty
+   console teaches you nothing about whether the layout works.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+const LEVELS = ["ask","guarded","full","sovereign"];
+let S = { level:"guarded", halted:false, allowed:0, asked:0, denied:0,
+          breaker:{samples:0,failures:0,rate:0,tripped:false}, rules:{}, knowledge:{} };
+let online = false;
+
+const $  = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c =>
+  ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+// Same bearer token the phone dashboard uses, from the same place. A browser
+// navigation cannot carry a header, so the page loads unauthenticated and every
+// call below is what actually gets checked.
+const TOKEN = sessionStorage.getItem("jarvis_token") || "";
+
+async function api(path, opts){
+  const headers = {"Content-Type":"application/json"};
+  if(TOKEN) headers["Authorization"] = "Bearer " + TOKEN;
+  const r = await fetch(path, Object.assign({headers, credentials:"same-origin"}, opts||{}));
+  if(r.status === 401){ location.href = "/login"; throw new Error("signed out"); }
+  if(!r.ok) throw new Error("HTTP "+r.status);
+  const j = await r.json();
+  if(j.ok === false) throw new Error(j.error || "request failed");
+  return j.data !== undefined ? j.data : j;
+}
+
+function setOnline(v, msg){
+  online = v;
+  $("#net-dot").className = v ? "" : "off";
+  $("#net-text").textContent = msg || (v ? "Connected to the assistant." : "Not connected.");
+}
+
+/* ── the lever ──────────────────────────────────────────────────────────── */
+
+function paintLever(){
+  const idx = LEVELS.indexOf(S.level);           // 0 bottom … 3 top
+  const dets = $$(".detent");                    // rendered top-down
+  dets.forEach(d => d.setAttribute("aria-checked",
+    String(d.dataset.level === S.level)));
+
+  const active = dets.find(d => d.dataset.level === S.level);
+  if(active){
+    const rail = active.closest(".lever").getBoundingClientRect();
+    const box  = active.getBoundingClientRect();
+    const y = box.top - rail.top + box.height/2 - 11;
+    $("#handle").style.top = y + "px";
+    const pct = ((idx + 0.5) / LEVELS.length) * 100;
+    $("#fill").style.height = pct + "%";
+  }
+  const hot = (S.level === "sovereign") ? "var(--oxide)" : "var(--sodium)";
+  $("#fill").style.background = hot;
+  $("#handle").style.borderColor = hot;
+}
+
+async function chooseLevel(level){
+  const prev = S.level;
+  S.level = level; paintLever();                  // optimistic: the lever moves at once
+  if(!online) return;
+  try{ Object.assign(S, await api("/api/v2/level",
+        {method:"POST", body:JSON.stringify({level})})); paint(); }
+  catch(e){ S.level = prev; paintLever(); setOnline(false, "Could not change level: "+e.message); }
+}
+
+/* ── halt ───────────────────────────────────────────────────────────────── */
+
+async function toggleHalt(){
+  const engaging = !S.halted;
+  S.halted = engaging; paintHalt();
+  if(!online) return;
+  try{
+    Object.assign(S, await api(engaging ? "/api/v2/halt" : "/api/v2/resume",
+      {method:"POST", body:JSON.stringify({reason:"console"})}));
+    paint();
+  }catch(e){ S.halted = !engaging; paintHalt(); setOnline(false, e.message); }
+}
+
+function paintHalt(){
+  const b = $("#halt");
+  b.classList.toggle("engaged", S.halted);
+  b.textContent = S.halted ? "Let it act again" : "Stop everything";
+  b.setAttribute("aria-pressed", String(S.halted));
+  $("#halt-note").hidden = !S.halted;
+  document.body.classList.toggle("halted", S.halted);
+}
+
+/* ── painting ───────────────────────────────────────────────────────────── */
+
+function paint(){
+  paintLever(); paintHalt();
+  $("#c-allowed").textContent = S.allowed|0;
+  $("#c-asked").textContent   = S.asked|0;
+  $("#c-denied").textContent  = S.denied|0;
+
+  const br = S.breaker || {};
+  const dot = $("#b-dot"), txt = $("#b-text");
+  if(br.tripped){
+    dot.className = "bad";
+    txt.textContent = `Dropped to ask — ${br.failures} of the last ${br.samples} actions failed.`;
+  }else if(br.samples){
+    dot.className = br.rate > 0.2 ? "off" : "";
+    txt.textContent = `${br.failures} of the last ${br.samples} actions failed.`;
+  }else{
+    dot.className = "off";
+    txt.textContent = "Nothing has run unattended yet.";
+  }
+
+  const n = Object.keys(S.rules||{}).length;
+  $("#n-rules").textContent = n;
+  $("#n-learn").textContent = (S.knowledge && S.knowledge.total) || 0;
+}
+
+const fmtTime = ts => {
+  const d = new Date((ts||0)*1000);
+  return isNaN(d) ? "" : d.toLocaleTimeString([], {hour12:false,hour:"2-digit",minute:"2-digit",second:"2-digit"});
+};
+
+function renderRegister(rows){
+  const el = $("#register");
+  if(!rows || !rows.length){
+    el.innerHTML = `<div class="empty"><b>Nothing on the register yet.</b>
+      Actions appear here the moment they are decided, whether they ran, waited
+      for you, or were refused.</div>`;
+    return;
+  }
+  el.innerHTML = rows.map(r=>{
+    const v = (r.verdict||"").toLowerCase();
+    const label = {allow:"ran",ask:"waited",deny:"refused"}[v] || v;
+    const ms = r.duration_ms ? `${(r.duration_ms/1000).toFixed(1)}s` : "";
+    return `<li class="row">
+      <span class="dot ${esc(v)}"></span>
+      <span class="time num">${fmtTime(r.ts)}</span>
+      <span class="what">
+        <b>${esc(r.name || r.key)}</b>
+        ${r.detail ? `<p>${esc(r.detail)}</p>` : ""}
+      </span>
+      <span class="tagline">
+        ${ms ? `<span class="num" style="margin-right:8px">${ms}</span>` : ""}
+        <span class="tag ${esc(v)}">${esc(label)}</span>
+      </span>
+    </li>`;
+  }).join("");
+}
+
+function renderKnowledge(rows){
+  const el = $("#knowledge");
+  if(!rows || !rows.length){
+    el.innerHTML = `<div class="empty"><b>It has not worked anything out yet.</b>
+      Claims appear here after it notices something repeat — a name that never
+      resolves, a step that needs longer to settle, a word you use for a device.</div>`;
+    return;
+  }
+  el.innerHTML = rows.map(r=>{
+    const c = Math.round((r.confidence||0)*100);
+    return `<div class="claim">
+      <div>
+        <p>${esc(r.claim)}</p>
+        <div class="meta">${esc(r.topic)} · confirmed ${r.hits||0}×</div>
+        <div class="conf ${c<40?"low":""}"><i style="width:${c}%"></i></div>
+      </div>
+      <button class="act" data-forget="${esc(r.topic)}" data-claim="${esc(r.claim)}">Forget</button>
+    </div>`;
+  }).join("");
+}
+
+function renderReflection(d){
+  const el = $("#reflection");
+  const res = (d && d.result) || {};
+  const fs = res.findings || [];
+  let html = "";
+
+  if(res.summary) html += `<p style="color:var(--muted);margin:0 0 18px">${esc(res.summary)}</p>`;
+
+  const broken = ((res.arguments||{}).broken)||[];
+  if(broken.length){
+    html += `<h3 style="font-size:14px;margin:22px 0 10px">Arguments that never work</h3>`;
+    html += broken.map(b=>`<div class="finding problem">
+      <b>${esc(b.tool)} · ${esc(b.value)}</b>
+      <p>Failed all ${b.calls} times it was tried.</p></div>`).join("");
+  }
+
+  if(fs.length){
+    html += `<h3 style="font-size:14px;margin:22px 0 10px">Findings</h3>`;
+    html += fs.map(f=>`<div class="finding ${esc(f.severity)}">
+      <b>${esc(f.area)}</b>
+      <p>${esc(f.detail)}${f.suggestion ? " — " + esc(f.suggestion) : ""}</p></div>`).join("");
+  }
+
+  const en = res.enforced || [];
+  if(en.length){
+    html += `<h3 style="font-size:14px;margin:22px 0 10px">What it changed</h3>`;
+    html += en.map(x=>`<div class="finding warn"><p style="margin:0">${esc(x)}</p></div>`).join("");
+  }
+
+  if(!html) html = `<div class="empty"><b>Not enough has happened yet.</b>
+    A pass needs a handful of tool calls before its numbers mean anything.</div>`;
+  el.innerHTML = html;
+}
+
+function renderRules(){
+  const el = $("#rules");
+  const keys = Object.keys(S.rules||{});
+  if(!keys.length){
+    el.innerHTML = `<div class="empty"><b>Nothing is pinned.</b>
+      Every action follows the lever. If one starts failing repeatedly it will
+      be pinned here on its own, with the number that caused it.</div>`;
+    return;
+  }
+  el.innerHTML = keys.map(k=>`<div class="claim">
+    <div><p><b>${esc(k)}</b></p>
+      <div class="meta">Always ${esc(S.rules[k])}, whatever the lever says.</div></div>
+    <button class="act" data-unpin="${esc(k)}">Unpin</button>
+  </div>`).join("");
+}
+
+/* ── loading ────────────────────────────────────────────────────────────── */
+
+async function refresh(){
+  try{
+    Object.assign(S, await api("/api/v2/state"));
+    setOnline(true); paint(); renderRules();
+    renderRegister(await api("/api/v2/register?limit=80"));
+  }catch(e){
+    setOnline(false, "Not connected — showing example data.");
+    demo();
+  }
+}
+
+async function loadKnowledge(){
+  try{ renderKnowledge(await api("/api/v2/knowledge?limit=60")); }
+  catch(e){ renderKnowledge(DEMO.knowledge); }
+}
+async function loadReflection(){
+  try{ renderReflection(await api("/api/v2/reflection")); }
+  catch(e){ renderReflection({result:DEMO.reflection}); }
+}
+
+/* ── demo data, for opening the file with nothing running ───────────────── */
+
+const now = Date.now()/1000;
+const DEMO = {
+  register:[
+    {ts:now-8,   name:"Set volume to 40",   verdict:"allow", detail:"guarded autonomy", duration_ms:180},
+    {ts:now-41,  name:"open_app",           verdict:"failed",detail:"failed: no application matched 'vscode'", duration_ms:820},
+    {ts:now-52,  name:"Close Spotify",      verdict:"allow", detail:"guarded autonomy", duration_ms:1400},
+    {ts:now-190, name:"Shut down the computer", verdict:"ask", detail:"guarded mode still asks before this one"},
+    {ts:now-260, name:"Format drive C:",    verdict:"deny",  detail:"below the floor that full autonomy keeps"},
+  ],
+  knowledge:[
+    {topic:"arguments", claim:"open_app: 'vscode' has never worked (40 attempts) — use 'code' instead", confidence:0.68, hits:3},
+    {topic:"displays",  claim:"'the big screen' means display 2", confidence:0.81, hits:7},
+    {topic:"self",      claim:"send_message: failed 5 of 13 calls. Verify the window has focus before typing.", confidence:0.44, hits:1},
+  ],
+  reflection:{
+    summary:"125 calls over 24h — 2 problems, 1 warning",
+    arguments:{broken:[{tool:"open_app", value:"vscode", calls:40}]},
+    findings:[
+      {severity:"problem", area:"open_app", detail:"failed 40 of 53 calls (76%)", suggestion:"usually one bad argument rather than the tool"},
+      {severity:"warn", area:"send_message", detail:"38% of calls could not be verified"},
+    ],
+    enforced:["close_process pinned to ask — it failed 5 of 9 calls"],
+  },
+};
+
+function demo(){
+  S.allowed=18; S.asked=3; S.denied=1;
+  S.breaker={samples:12,failures:2,rate:.17,tripped:false};
+  S.rules={close_process:"ask"};
+  S.knowledge={total:3};
+  paint(); renderRules(); renderRegister(DEMO.register);
+}
+
+/* ── wiring ─────────────────────────────────────────────────────────────── */
+
+$$(".detent").forEach(d =>
+  d.addEventListener("click", () => chooseLevel(d.dataset.level)));
+
+$("#halt").addEventListener("click", toggleHalt);
+$("#r-refresh").addEventListener("click", refresh);
+
+$("#run-reflect").addEventListener("click", async e => {
+  e.target.textContent = "Running…";
+  try{ renderReflection({result: await api("/api/v2/reflect",
+        {method:"POST", body:JSON.stringify({window:24, act:true})})}); }
+  catch(err){ renderReflection({result:DEMO.reflection}); }
+  e.target.textContent = "Run a pass now";
+  refresh();
+});
+
+$$(".tab").forEach(t => t.addEventListener("click", () => {
+  $$(".tab").forEach(x => x.setAttribute("aria-selected", String(x===t)));
+  $$(".pane").forEach(p => p.hidden = (p.id !== t.dataset.pane));
+  if(t.dataset.pane === "p-learn")   loadKnowledge();
+  if(t.dataset.pane === "p-reflect") loadReflection();
+  if(t.dataset.pane === "p-rules")   renderRules();
+}));
+
+document.addEventListener("click", async ev => {
+  const f = ev.target.closest("[data-forget]");
+  if(f){
+    try{ await api("/api/v2/knowledge/forget", {method:"POST",
+      body:JSON.stringify({topic:f.dataset.forget, claim:f.dataset.claim})}); }catch(e){}
+    loadKnowledge(); return;
+  }
+  const u = ev.target.closest("[data-unpin]");
+  if(u){
+    try{ await api("/api/v2/rule", {method:"POST",
+      body:JSON.stringify({key:u.dataset.unpin, verdict:""})}); }catch(e){}
+    refresh();
+  }
+});
+
+// Escape is the fastest possible stop.
+document.addEventListener("keydown", e => {
+  if(e.key === "Escape" && !S.halted) toggleHalt();
+});
+
+setInterval(() => {
+  $("#clock").textContent = new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+}, 1000);
+$("#clock").textContent = new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+
+window.addEventListener("resize", paintLever);
+refresh();
+setInterval(refresh, 5000);
+</script>
+</body>
+</html>

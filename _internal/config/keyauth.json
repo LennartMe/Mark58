@@ -1,0 +1,8 @@
+{
+  "_comment": "App Secret is read from the KEYAUTH_SECRET environment variable first, and only falls back to the 'secret' field here. Keep 'secret' empty and set the env var so this file is safe to share. While name or ownerid are placeholders the gate is skipped and Mark 58 boots straight to diagnostics.",
+  "enabled": true,
+  "name": "Jarvis Intellegence",
+  "ownerid": "nTFN0SCizz",
+  "version": "1.0",
+  "secret": ""
+}

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#06080e">
+<title>Pair with JARVIS</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#05080e;--panel:rgba(255,255,255,.045);--line:rgba(160,178,220,.16);--line2:rgba(160,178,220,.34);--accent:#ff42af;--accent2:#ff8fc4;--ok:#49e3a6;--bad:#ff5c78;--text:#eaf1fb;--muted:#7e8aa0;--mono:ui-monospace,"SFMono-Regular",Consolas,monospace;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var(--sans)}
+  body{display:flex;align-items:center;justify-content:center;padding:24px;overflow-x:hidden}
+  body::before{content:"";position:fixed;width:680px;height:680px;left:50%;top:44%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(255,66,175,.17),rgba(255,66,175,.05) 36%,transparent 68%);pointer-events:none}
+  body::after{content:"";position:fixed;inset:0;opacity:.20;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:28px 28px;mask-image:linear-gradient(to bottom,transparent,#000 20%,#000 80%,transparent)}
+  .panel{position:relative;width:min(100%,410px);padding:30px 26px 24px;border:1px solid var(--line);border-radius:24px;background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.022));backdrop-filter:blur(18px);box-shadow:0 22px 80px rgba(0,0,0,.42)}
+  .eyebrow{font:700 11px var(--mono);letter-spacing:.22em;color:var(--accent2);margin-bottom:8px}.title{font-size:25px;font-weight:700;letter-spacing:.08em;margin-bottom:7px}.lede{color:var(--muted);font-size:14px;line-height:1.55;margin-bottom:24px}
+  .status{display:flex;align-items:center;gap:9px;color:var(--muted);font-size:13px;margin-bottom:18px}.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 14px rgba(255,66,175,.6);animation:pulse 1.5s ease-in-out infinite}@keyframes pulse{50%{opacity:.35;transform:scale(.8)}}
+  .code{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;position:relative;margin:6px 0 14px}.cell{height:58px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.035);font:700 24px var(--mono);transition:.15s}.cell.filled{border-color:var(--line2);background:rgba(255,66,175,.08)}.cell.active{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,66,175,.12)}
+  #code{position:absolute;inset:0;width:100%;height:100%;opacity:0;font-size:16px;border:0;background:transparent}
+  .rotate{display:flex;align-items:center;justify-content:space-between;color:var(--muted);font:600 11px var(--mono);letter-spacing:.05em;margin-bottom:18px}.track{height:3px;flex:1;margin-left:12px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden}.fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:100%;transition:width .18s linear}
+  .note{min-height:38px;color:var(--muted);font-size:13px;line-height:1.4}.note.error{color:var(--bad)}
+  button{width:100%;border:1px solid rgba(255,66,175,.55);border-radius:13px;background:linear-gradient(90deg,rgba(255,66,175,.28),rgba(255,143,196,.18));color:#fff;padding:14px 16px;font-weight:700;font-size:15px;cursor:pointer}button:hover{border-color:var(--accent2)}button:disabled{opacity:.55;cursor:default}
+  .foot{border-top:1px solid var(--line);margin-top:20px;padding-top:14px;color:var(--muted);font-size:12px;line-height:1.5}.foot b{color:var(--text);font-weight:600}.bad .dot{background:var(--bad);box-shadow:0 0 14px rgba(255,92,120,.55)}.ok .dot{background:var(--ok);box-shadow:0 0 14px rgba(73,227,166,.55);animation:none}.ok button{background:rgba(73,227,166,.16);border-color:rgba(73,227,166,.7);color:var(--ok)}
+  @media(max-width:390px){.panel{padding:26px 18px 20px}.code{gap:6px}.cell{height:53px;font-size:21px}}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="panel" id="panel">
+  <div class="eyebrow">MARK 57 // REMOTE LINK</div>
+  <h1 class="title">PAIR WITH JARVIS</h1>
+  <p class="lede">Enter the six-digit code currently shown on your JARVIS desktop. The code changes every 14 seconds.</p>
+  <div class="status"><span class="dot"></span><span id="statusText">Secure pairing window active</span></div>
+  <div class="code" id="codeRow">
+    <input id="code" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" aria-label="Six digit pairing code">
+    <div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+  </div>
+  <div class="rotate"><span id="rotateText">CODE ROTATES IN --</span><div class="track"><div class="fill" id="fill"></div></div></div>
+  <p class="note" id="note">Keep this page open and enter the current desktop code.</p>
+  <button id="connect" type="button">Connect to JARVIS</button>
+  <div class="foot">Your phone must be on the same network as the computer running JARVIS. The QR code identifies the pairing session; <b>it does not contain the rotating code.</b></div>
+</main>
+<script>
+(() => {
+  'use strict';
+  const embedded='__PAIR_ID__';
+  const pairId=embedded || new URLSearchParams(location.search).get('id') || '';
+  const panel=document.getElementById('panel'), input=document.getElementById('code'), cells=[...document.querySelectorAll('.cell')], note=document.getElementById('note'), btn=document.getElementById('connect'), status=document.getElementById('statusText'), rotate=document.getElementById('rotateText'), fill=document.getElementById('fill');
+  let active=true,busy=false;
+  function render(){const v=input.value.replace(/\D/g,'').slice(0,6);if(v!==input.value)input.value=v;cells.forEach((c,i)=>{c.textContent=v[i]||'';c.classList.toggle('filled',i<v.length);c.classList.toggle('active',document.activeElement===input&&i===Math.min(v.length,5)&&!busy)});}
+  function setNote(t,bad=false){note.textContent=t;note.classList.toggle('error',bad)}
+  async function poll(){if(!pairId)return expire('This pairing link is missing its session id. Open Remote Dashboard again on the desktop.');try{const r=await fetch('/api/pair-status?id='+encodeURIComponent(pairId),{cache:'no-store'});const d=await r.json();if(!d.active)return expire('This pairing session expired. Open Remote Dashboard again to generate a new QR code.');const n=Math.max(0,Number(d.rotates_in)||0);rotate.textContent='CODE ROTATES IN '+n.toFixed(1)+'s';fill.style.width=(Math.max(0,Math.min(14,n))/14*100)+'%';}catch(e){rotate.textContent='WAITING FOR JARVIS';}}
+  function expire(msg){active=false;panel.classList.add('bad');status.textContent='Pairing unavailable';setNote(msg,true);btn.disabled=true;input.disabled=true;fill.style.width='0%';}
+  async function connect(){if(!active||busy)return;const code=input.value.trim();if(code.length!==6){setNote('Enter all six digits shown on the desktop.',true);input.focus();return;}busy=true;btn.disabled=true;btn.textContent='Verifying…';setNote('Checking the rotating code…');try{const r=await fetch('/api/pair',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pair_id:pairId,code})});const d=await r.json().catch(()=>({}));if(r.ok&&d.ok&&d.token){sessionStorage.setItem('jarvis_token',d.token);sessionStorage.setItem('jarvis_key',d.key||'');if(d.device_token)localStorage.setItem('jarvis_device_token',d.device_token);panel.classList.remove('bad');panel.classList.add('ok');status.textContent='Phone linked';setNote('Connected. Opening remote control…');btn.textContent='Connected';setTimeout(()=>location.replace('/'),450);return;}setNote(d.error||'That code is not valid anymore. Enter the new code shown on the desktop.',true);input.value='';render();input.focus();}catch(e){setNote("Can't reach JARVIS. Check that both devices are on the same network.",true);}finally{if(!panel.classList.contains('ok')){busy=false;btn.disabled=false;btn.textContent='Connect to JARVIS';}}}
+  input.addEventListener('input',render);input.addEventListener('focus',render);input.addEventListener('blur',render);input.addEventListener('keydown',e=>{if(e.key==='Enter')connect()});document.getElementById('codeRow').addEventListener('click',()=>input.focus());btn.addEventListener('click',connect);render();input.focus();poll();setInterval(poll,250);
+})();
+</script>
+</body>
+</html>

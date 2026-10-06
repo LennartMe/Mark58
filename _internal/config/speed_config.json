@@ -1,0 +1,21 @@
+{
+  "streaming": {
+    "enabled": true,
+    "chunk_size": 20,
+    "buffer_ms": 100
+  },
+  "voice_pipeline": {
+    "parallel_stt_tts": true,
+    "stt_timeout_ms": 30000,
+    "cache_recognition": true
+  },
+  "model_optimization": {
+    "streaming": true,
+    "timeout_ms": 45000,
+    "early_stop": true
+  },
+  "ui_responsiveness": {
+    "update_frequency_ms": 50,
+    "show_first_token_ms": 200
+  }
+}
